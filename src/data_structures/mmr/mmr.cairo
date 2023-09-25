@@ -75,16 +75,16 @@ impl MMRImpl of MMRTrait {
                 r = r + 1;
             };
         };
+        let s = peaks_arr.len();
 
         // create one peak from last *r* peaks
         let mut i = 0;
-        let mut peaks_span = peaks_arr.span();
-        let mut acc = *peaks_span.pop_back().unwrap();
+        let mut acc = *peaks_arr.at(s - 1);
         loop {
             if i == r {
                 break ();
             }
-            let peak = *peaks_span.pop_back().unwrap();
+            let peak = *peaks_arr.at(s - 2 - i);
             acc = PoseidonHasher::hash_double(peak, acc);
             i += 1;
         };
@@ -93,18 +93,17 @@ impl MMRImpl of MMRTrait {
         let mut i = 0;
         let mut new_peaks = ArrayTrait::new();
         loop {
-            if i == peaks_arr.len() - r {
+            if i == s - r {
                 break ();
             }
-            new_peaks.append(peaks_span.pop_front().unwrap());
+            new_peaks.append(*peaks_arr.at(i));
             i += 1;
         };
 
         // add new peak
         new_peaks.append(acc);
 
-        // previous code
-        
+        // debug code
         // let mut i = 0;
         // loop {
         //     if i == new_peaks.len() - 1 {
@@ -114,41 +113,13 @@ impl MMRImpl of MMRTrait {
         //     x.print();
         //     i += 1;
         // };
-        // let mut height = 0;
-        // loop {
-        //     if get_height(self.last_pos + 1) <= height {
-        //         break ();
-        //     }
-        //     self.last_pos += 1;
 
-        //     let mut peaks_span = peaks_arr.span();
-        //     // As the above condition verifies that a merge is happening, we have at least 2 peaks (that are about to be merged)
-        //     let right = peaks_span.pop_back().unwrap();
-        //     let left = peaks_span.pop_back().unwrap();
+        let arr_span = new_peaks.span();
 
-        //     let mut new_peaks = ArrayTrait::new();
-        //     i = 0;
-        //     loop {
-        //         if i == peaks_arr.len() - 2 {
-        //             break ();
-        //         }
-
-        //         new_peaks.append(*peaks_arr.at(i));
-
-        //         i += 1;
-        //     };
-
-        //     let hash = PoseidonHasher::hash_double(*left, *right);
-        //     new_peaks.append(hash);
-        //     peaks_arr = new_peaks;
-
-        //     height += 1;
-        // };
-
-        let new_root = compute_root(self.last_pos.into(), peaks_arr.span());
+        let new_root = compute_root(self.last_pos.into(), arr_span);
         self.root = new_root;
 
-        Result::Ok((new_root, peaks_arr.span()))
+        Result::Ok((new_root, arr_span))
     }
 
     // @notice Verifies a proof for an element in the MMR
