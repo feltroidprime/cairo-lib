@@ -2,7 +2,7 @@ use pedersen::PedersenTrait;
 use hash::HashStateTrait;
 
 // After 0.12
-#[derive(Drop)]
+#[derive(Drop, Serde)]
 struct StarknetBlockHeader {
     block_number: felt252,
     global_state_root: felt252,
